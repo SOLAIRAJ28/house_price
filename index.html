@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>House Price Predictor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            animation: slideDown 0.6s ease-out;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .nav-tabs button {
+            padding: 12px 24px;
+            border: none;
+            background: white;
+            color: #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-tabs button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-tabs button.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .tab-content {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .tab-content.hidden {
+            display: none;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-row.full {
+            grid-template-columns: 1fr;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .label-info {
+            font-size: 0.85em;
+            color: #666;
+            margin-left: 5px;
+        }
+
+        input[type="number"],
+        input[type="range"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="number"]:focus,
+        input[type="range"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        input[type="range"] {
+            padding: 0;
+            height: 8px;
+        }
+
+        .range-value {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 4px 12px;
+            border-radius: 4px;
+            margin-left: 10px;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .section-title {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #333;
+            margin: 30px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        button[type="submit"],
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px 32px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        button[type="submit"]:hover,
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+        }
+
+        button[type="submit"]:active,
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .result {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-top: 30px;
+            text-align: center;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+            animation: slideUp 0.4s ease-out;
+        }
+
+        .result-price {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin: 15px 0;
+        }
+
+        .result-info {
+            font-size: 0.95em;
+            opacity: 0.9;
+        }
+
+        .info-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            margin: 15px 0;
+        }
+
+        .info-card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .info-card p {
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-box .label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .stat-box .value {
+            font-size: 1.8em;
+            font-weight: 700;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        table th {
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        table td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .tab-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏠 House Price Predictor</h1>
+            <p>Predict California house prices using AI and Machine Learning</p>
+        </header>
+
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('home')">🏠 Home</button>
+            <button class="tab-btn" onclick="switchTab('predict')">🎯 Predict</button>
+            <button class="tab-btn" onclick="switchTab('history')">📊 History</button>
+            <button class="tab-btn" onclick="switchTab('stats')">📈 Statistics</button>
+            <button class="tab-btn" onclick="switchTab('about')">ℹ️ About</button>
+        </div>
+
+        <!-- HOME TAB -->
+        <div id="home" class="tab-content">
+            <h2>Welcome to House Price Predictor!</h2>
+            <p>This AI application predicts California house prices based on multiple factors.</p>
+
+            <div class="info-card">
+                <h3>🎯 How It Works</h3>
+                <p>Enter house features like location, age, and number of rooms to get an instant price prediction powered by machine learning!</p>
+            </div>
+
+            <div class="info-card">
+                <h3>📊 Features Analyzed</h3>
+                <p>
+                    • Median Income (economic indicator)<br>
+                    • House Age (in years)<br>
+                    • Average Rooms per Household<br>
+                    • Average Bedrooms per Household<br>
+                    • Population Density<br>
+                    • Average Occupation Level<br>
+                    • Geographic Location (Latitude & Longitude)
+                </p>
+            </div>
+
+            <div class="info-card">
+                <h3>🤖 About the Model</h3>
+                <p>
+                    <strong>Algorithm:</strong> Linear Regression<br>
+                    <strong>Dataset:</strong> California Housing Dataset (1990)<br>
+                    <strong>Training Size:</strong> 16,512 house records<br>
+                    <strong>Accuracy:</strong> Trained on 80% test data
+                </p>
+            </div>
+        </div>
+
+        <!-- PREDICT TAB -->
+        <div id="predict" class="tab-content hidden">
+            <h2>🎯 House Price Predictor</h2>
+            <form id="predictForm" onsubmit="submitPrediction(event)">
+                <div class="section-title">📍 Location & Demographics</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Latitude <span class="label-info">(32.5 - 42.0)</span>
+                            <span class="range-value" id="latVal">37.88</span>
+                        </label>
+                        <input type="range" id="latitude" name="latitude" min="32.5" max="42" step="0.01" value="37.88" onchange="updateRangeValue('latitude', 'latVal')">
+                    </div>
+                    <div class="form-group">
+                        <label>Longitude <span class="label-info">(-125 to -114)</span>
+                            <span class="range-value" id="lonVal">-122.23</span>
+                        </label>
+                        <input type="range" id="longitude" name="longitude" min="-125" max="-114" step="0.01" value="-122.23" onchange="updateRangeValue('longitude', 'lonVal')">
+                    </div>
+                </div>
+
+                <div class="section-title">💰 Economic Indicators</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Median Income <span class="label-info">(in $100,000s)</span>
+                            <span class="range-value" id="incVal">8.33</span>
+                        </label>
+                        <input type="range" id="medianIncome" name="medianIncome" min="0.5" max="15" step="0.1" value="8.33" onchange="updateRangeValue('medianIncome', 'incVal')">
+                    </div>
+                    <div class="form-group">
+                        <label>Population <span class="label-info">(per block)</span></label>
+                        <input type="number" id="population" name="population" value="1000" min="100" max="50000">
+                    </div>
+                </div>
+
+                <div class="section-title">🏘️ Housing Characteristics</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>House Age <span class="label-info">(years)</span>
+                            <span class="range-value" id="ageVal">41</span>
+                        </label>
+                        <input type="range" id="houseAge" name="houseAge" min="1" max="52" step="1" value="41" onchange="updateRangeValue('houseAge', 'ageVal')">
+                    </div>
+                    <div class="form-group">
+                        <label>Average Rooms per Household <span class="label-info">(1 - 15)</span>
+                            <span class="range-value" id="roomVal">6.98</span>
+                        </label>
+                        <input type="range" id="avgRooms" name="avgRooms" min="1" max="15" step="0.1" value="6.98" onchange="updateRangeValue('avgRooms', 'roomVal')">
+                    </div>
+                </div>
+
+                <div class="section-title">🛏️ Additional Features</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Average Bedrooms per Household <span class="label-info">(0.5 - 5)</span>
+                            <span class="range-value" id="bedVal">1.02</span>
+                        </label>
+                        <input type="range" id="avgBedrooms" name="avgBedrooms" min="0.5" max="5" step="0.05" value="1.02" onchange="updateRangeValue('avgBedrooms', 'bedVal')">
+                    </div>
+                    <div class="form-group">
+                        <label>Average Occupation <span class="label-info">(1 - 10)</span>
+                            <span class="range-value" id="occVal">2.55</span>
+                        </label>
+                        <input type="range" id="avgOccupation" name="avgOccupation" min="1" max="10" step="0.1" value="2.55" onchange="updateRangeValue('avgOccupation', 'occVal')">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary">🔮 Predict Price</button>
+            </form>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Analyzing data...</p>
+            </div>
+
+            <div class="result" id="result">
+                <h3>Prediction Result</h3>
+                <div class="result-price" id="resultPrice">$0.00</div>
+                <div class="result-info" id="resultInfo">Price shown in $100,000s</div>
+            </div>
+        </div>
+
+        <!-- HISTORY TAB -->
+        <div id="history" class="tab-content hidden">
+            <h2>📊 Prediction History</h2>
+            <button class="btn-primary" onclick="loadHistory()">🔄 Load History</button>
+            <div id="historyTable"></div>
+        </div>
+
+        <!-- STATISTICS TAB -->
+        <div id="stats" class="tab-content hidden">
+            <h2>📈 Statistics & Analytics</h2>
+            <button class="btn-primary" onclick="loadStats()">🔄 Refresh Statistics</button>
+            <div id="statsContent"></div>
+        </div>
+
+        <!-- ABOUT TAB -->
+        <div id="about" class="tab-content hidden">
+            <h2>ℹ️ About This Project</h2>
+
+            <div class="info-card">
+                <h3>🎯 Purpose</h3>
+                <p>This is an educational AI application that demonstrates how machine learning can be used to predict house prices based on real-world California housing data.</p>
+            </div>
+
+            <div class="info-card">
+                <h3>🛠️ Technology Stack</h3>
+                <p>
+                    <strong>Backend:</strong> FastAPI (Python)<br>
+                    <strong>Frontend:</strong> Gradio + HTML/CSS<br>
+                    <strong>ML Library:</strong> scikit-learn<br>
+                    <strong>Model:</strong> Linear Regression<br>
+                    <strong>Deployment:</strong> Render (Free Tier)
+                </p>
+            </div>
+
+            <div class="info-card">
+                <h3>📊 Dataset Information</h3>
+                <p>
+                    <strong>Source:</strong> California Housing Dataset (1990)<br>
+                    <strong>Total Records:</strong> 16,512 houses<br>
+                    <strong>Number of Features:</strong> 8<br>
+                    <strong>Training/Testing Split:</strong> 80% / 20%
+                </p>
+            </div>
+
+            <div class="info-card">
+                <h3>⚠️ Limitations</h3>
+                <p>
+                    • Model based on 1990 California housing data<br>
+                    • May not reflect current 2024/2025 prices<br>
+                    • Best for relative price comparisons<br>
+                    • Assumes linear relationships between features<br>
+                    • For educational purposes only
+                </p>
+            </div>
+
+            <div class="info-card">
+                <h3>🔗 Links</h3>
+                <p>
+                    <strong>GitHub:</strong> <a href="https://github.com/BytesofSurajm/house-price-api" style="color: white; text-decoration: underline;">github.com/BytesofSurajm/house-price-api</a><br>
+                    <strong>Deployment:</strong> <a href="https://render.com" style="color: white; text-decoration: underline;">Render (Free Hosting)</a>
+                </p>
+            </div>
+        </div>
+
+        <footer>
+            <p>🏠 House Price Predictor | Built with ❤️ for learning AI and Machine Learning</p>
+        </footer>
+    </div>
+
+    <script>
+        function switchTab(tabName) {
+            // Hide all tabs
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.add('hidden'));
+
+            // Show selected tab
+            document.getElementById(tabName).classList.remove('hidden');
+
+            // Update active button
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function updateRangeValue(inputId, displayId) {
+            const value = document.getElementById(inputId).value;
+            const displayElement = document.getElementById(displayId);
+            if (displayElement) {
+                displayElement.textContent = parseFloat(value).toFixed(2);
+            }
+        }
+
+        async function submitPrediction(event) {
+            event.preventDefault();
+
+            const medianIncome = parseFloat(document.getElementById('medianIncome').value);
+            const houseAge = parseFloat(document.getElementById('houseAge').value);
+            const avgRooms = parseFloat(document.getElementById('avgRooms').value);
+            const avgBedrooms = parseFloat(document.getElementById('avgBedrooms').value);
+            const population = parseFloat(document.getElementById('population').value);
+            const avgOccupation = parseFloat(document.getElementById('avgOccupation').value);
+            const latitude = parseFloat(document.getElementById('latitude').value);
+            const longitude = parseFloat(document.getElementById('longitude').value);
+
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+
+            loading.style.display = 'block';
+            result.classList.remove('show');
+
+            try {
+                const response = await fetch('http://localhost:10000/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        data: [medianIncome, houseAge, avgRooms, avgBedrooms, population, avgOccupation, latitude, longitude]
+                    })
+                });
+
+                const data = await response.json();
+                const prediction = data.prediction;
+
+                document.getElementById('resultPrice').textContent = `$${prediction.toFixed(2)}`;
+                document.getElementById('resultInfo').textContent = `Predicted price in $100,000s for the area (${latitude.toFixed(2)}°N, ${longitude.toFixed(2)}°W)`;
+
+                result.classList.add('show');
+            } catch (error) {
+                alert('Error: Could not reach the API. Make sure the server is running on localhost:10000');
+                console.error('Error:', error);
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        function loadHistory() {
+            alert('History loading functionality would be implemented with backend integration');
+        }
+
+        function loadStats() {
+            alert('Statistics loading functionality would be implemented with backend integration');
+        }
+    </script>
+</body>
+</html>

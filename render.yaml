@@ -2,9 +2,7 @@ services:
   - type: web
     name: house-price-predictor
     runtime: python
+    pythonVersion: 3.11
     buildCommand: pip install -r requirements.txt
     startCommand: python main.py
     plan: free
-    envVars:
-      - key: PYTHON_VERSION
-        value: 3.11

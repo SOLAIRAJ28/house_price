@@ -1,5 +1,7 @@
 from fastapi import FastAPI
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
 import joblib
@@ -12,6 +14,15 @@ app = FastAPI(
     title="House Price Predictor API",
     description="AI-powered API for predicting California house prices",
     version="1.0.0"
+)
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Load the trained model
@@ -80,13 +91,8 @@ def clear_history_endpoint():
 
 @app.get("/")
 def root():
-    """API info"""
-    return {
-        "service": "House Price Predictor API",
-        "version": "1.0.0",
-        "endpoints": ["/predict", "/health", "/history", "/stats"],
-        "docs": "/docs"
-    }
+    """Serve the HTML UI"""
+    return FileResponse("index.html")
 
 
 # ==================== UTILITY FUNCTIONS ====================
@@ -132,4 +138,4 @@ def load_prediction_history():
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 10000))
-    uvicorn.run(app, host="0.0.0.0", port=port, log_level="info")
+    uvicorn.run(app, host="127.0.0.1", port=port, log_level="info")
